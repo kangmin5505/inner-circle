@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - pong_arcade
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    env_file:
+      - ./postgres/postgres.env
+    restart: always
+    networks:
+      - pong_arcade
+    volumes:
+      - ./postgres/:/docker-entrypoint-initdb.d/
+
+  backend:
+    image: backend
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    restart: always
+    depends_on:
+      - postgres
+    networks:
+      - pong_arcade
+
+networks:
+  pong_arcade:
+    driver: bridge

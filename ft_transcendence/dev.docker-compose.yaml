@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  nginx_dev:
+    image: nginx_dev
+    container_name: nginx_dev
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile.dev
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - pong_arcade
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5433:5432"
+    env_file:
+      - ./postgres/postgres.env
+    restart: always
+    networks:
+      - pong_arcade
+    volumes:
+      - ./postgres/:/docker-entrypoint-initdb.d/
+
+  backend_dev:
+    image: backend_dev
+    container_name: backend_dev
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/backend
+      - /backend/node_modules
+      - /backend/dist
+    restart: always
+    networks:
+      - pong_arcade
+
+  frontend_dev:
+    image: frontend_dev
+    container_name: frontend_dev
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
+      - /frontend/dist
+      - /frontend/build
+    restart: always
+    networks:
+      - pong_arcade
+
+networks:
+  pong_arcade:
+    driver: bridge
